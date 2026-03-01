@@ -1,0 +1,172 @@
+// ─────────────────────────────────────────────────
+// Prisma Schema — CS Admission Intelligence System
+// ─────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ══════════════════════════════════════════════════
+// Domain models
+// ══════════════════════════════════════════════════
+
+model University {
+  id             String   @id @default(uuid())
+  name           String
+  state          String?
+  website        String?
+  csRanking      Int
+  csAdmissionUrl String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  admissions CsPhdAdmission[]
+
+  // Back-references for existing crawler / program modules
+  programs  Program[]
+  crawlJobs CrawlJob[]
+
+  @@index([csRanking])
+  @@index([name])
+}
+
+model CsPhdAdmission {
+  id           String   @id @default(uuid())
+  universityId String
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  deadline       DateTime?
+  greRequired    Boolean?
+  ieltsRequired  Boolean?
+  ieltsScore     Float?
+  toeflScore     Int?
+  applicationFee Int?
+
+  lastVerifiedAt  DateTime
+  confidenceScore Float
+  needsReview     Boolean @default(false)
+
+  rawHtmlSnapshot String @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([universityId])
+}
+
+// ══════════════════════════════════════════════════
+// Crawler / Scraper
+// ══════════════════════════════════════════════════
+
+model Program {
+  id           String    @id @default(uuid())
+  universityId String
+  name         String
+  degree       String
+  department   String?
+  url          String?
+  deadline     DateTime?
+  requirements Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  university University  @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  pages      ScrapedPage[]
+
+  @@index([universityId])
+  @@index([degree])
+}
+
+model CrawlJob {
+  id           String      @id @default(uuid())
+  universityId String?
+  targetUrl    String
+  maxDepth     Int         @default(2)
+  maxPages     Int         @default(12)
+  status       CrawlStatus @default(PENDING)
+  pagesVisited Int         @default(0)
+  startedAt    DateTime?
+  finishedAt   DateTime?
+  errorMessage String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  university University?   @relation(fields: [universityId], references: [id])
+  pages      ScrapedPage[]
+
+  @@index([status])
+  @@index([universityId])
+}
+
+model ScrapedPage {
+  id         String   @id @default(uuid())
+  crawlJobId String
+  programId  String?
+  url        String
+  title      String?
+  rawContent String   @db.Text
+  cleanText  String?  @db.Text
+  links      String[]
+  scrapedAt  DateTime @default(now())
+
+  crawlJob CrawlJob @relation(fields: [crawlJobId], references: [id], onDelete: Cascade)
+  program  Program? @relation(fields: [programId], references: [id])
+
+  @@unique([crawlJobId, url])
+  @@index([crawlJobId])
+  @@index([url])
+}
+
+// ══════════════════════════════════════════════════
+// Agent / Chat
+// ══════════════════════════════════════════════════
+
+model ChatSession {
+  id        String   @id @default(uuid())
+  userId    String?
+  title     String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  messages ChatMessage[]
+
+  @@index([userId])
+}
+
+model ChatMessage {
+  id        String      @id @default(uuid())
+  sessionId String
+  role      MessageRole
+  content   String      @db.Text
+  toolName  String?
+  metadata  Json?
+  createdAt DateTime    @default(now())
+
+  session ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}
+
+// ══════════════════════════════════════════════════
+// Enums
+// ══════════════════════════════════════════════════
+
+enum CrawlStatus {
+  PENDING
+  RUNNING
+  DONE
+  FAILED
+}
+
+enum MessageRole {
+  SYSTEM
+  USER
+  ASSISTANT
+  TOOL
+}

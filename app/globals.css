@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * ─────────────────────────────────────────────────────────────────────────────
+ * THEME — change ONLY these CSS variables to retheme the entire app.
+ * The Tailwind `brand-*` tokens (tailwind.config.ts) reference these vars,
+ * so every button, badge, ring, hover, and accent updates automatically.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+:root {
+  /* Brand palette — primary #0A66C2 (LinkedIn blue) */
+  --brand-50:  #EAF3FD;
+  --brand-100: #CCDFF8;
+  --brand-200: #89BBF2;
+  --brand-300: #4697EA;
+  --brand-400: #1378DE;
+  --brand-500: #0C6FD0;
+  --brand-600: #0B6CCB;
+  --brand-700: #0A66C2; /* ← PRIMARY — LinkedIn blue */
+  --brand-800: #08509A;
+  --brand-900: #053472;
+  --brand-950: #031E46;
+
+  /* Semantic aliases — optional shorthand */
+  --color-accent:       var(--brand-700);
+  --color-accent-hover: var(--brand-800);
+  --color-accent-light: var(--brand-50);
+  --color-accent-ring:  var(--brand-300);
+
+  /* Typography */
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-800;
+    font-family: var(--font-sans);
+  }
+
+  /* Custom scrollbar — Chrome / Edge */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track  { @apply bg-transparent; }
+  ::-webkit-scrollbar-thumb  { @apply bg-slate-200 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-300; }
+
+  /* Firefox */
+  * { scrollbar-width: thin; scrollbar-color: theme(colors.slate.200) transparent; }
+
+  /* Selection highlight */
+  ::selection { background: var(--brand-100); color: var(--brand-900); }
+}
+
+@layer components {
+  /* ── Input ── */
+  .input-base {
+    @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800
+      placeholder:text-slate-400 transition-all duration-150
+      focus:outline-none disabled:cursor-not-allowed disabled:opacity-50;
+    --tw-ring-color: var(--brand-300);
+    --tw-border-color: var(--brand-400);
+  }
+  .input-base:focus {
+    border-color: var(--brand-400);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-300) 35%, transparent);
+  }
+
+  /* ── Select ── */
+  .select-base { @apply input-base appearance-none cursor-pointer; }
+
+  /* ── Card ── */
+  .card {
+    @apply bg-white rounded-xl border border-slate-100 shadow-sm shadow-slate-200/50;
+  }
+
+  /* ── Badge ── */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium;
+  }
+
+  /* ── Btn primary ── */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium
+      text-white shadow-sm transition-all duration-150
+      active:scale-[0.98] focus:outline-none focus:ring-offset-2
+      disabled:opacity-50 disabled:cursor-not-allowed;
+    background-color: var(--color-accent);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--brand-900) 15%, transparent);
+  }
+  .btn-primary:hover  { background-color: var(--color-accent-hover); }
+  .btn-primary:focus  { box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-400) 40%, transparent); }
+
+  /* ── Btn ghost ── */
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-600
+      transition-all duration-150 hover:bg-slate-100 hover:text-slate-900 active:scale-[0.98]
+      focus:outline-none focus:ring-2 focus:ring-slate-300;
+  }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+
+  /* Row hover — left accent border + subtle bg */
+  .row-hover {
+    @apply transition-all duration-150;
+  }
+  .row-hover:hover {
+    background-color: color-mix(in srgb, var(--brand-50) 70%, transparent);
+    box-shadow: inset 2px 0 0 var(--brand-400);
+  }
+
+  /* Fade-slide entrance */
+  .animate-in { animation: fadeSlideIn 0.25s ease-out both; }
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Skeleton pulse */
+  .skeleton { @apply animate-pulse rounded bg-slate-100; }
+}
