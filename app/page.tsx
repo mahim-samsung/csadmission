@@ -16,7 +16,7 @@ export default function HomePage() {
                 </span>
                 <span className="text-xs text-slate-400">Updated weekly by AI crawler</span>
               </div>
-              <h1 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+              <h1 className="mt-3 text-2xl font-bold tracking-tight text-brand-900 sm:text-3xl">
                 CS PhD Admission Requirements
               </h1>
               <p className="mt-1 text-sm text-slate-500">
@@ -31,7 +31,7 @@ export default function HomePage() {
                 { label: "Built by", value: "Mahim" },
               ].map((s) => (
                 <div key={s.label} className="text-center sm:text-right">
-                  <div className="text-lg font-bold text-slate-900">{s.value}</div>
+                  <div className="text-lg font-bold text-brand-900">{s.value}</div>
                   <div className="text-xs text-slate-400">{s.label}</div>
                 </div>
               ))}

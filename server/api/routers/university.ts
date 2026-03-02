@@ -41,10 +41,10 @@ export const GetUniversitiesInputSchema = z.object({
   page: z.number().int().min(1).default(1),
   limit: z.number().int().min(1).max(200).default(20),
 
-  /** Sort field */
+  /** Sort field - optional, defaults to csRanking */
   orderBy: z
     .enum(["csRanking", "name", "createdAt"])
-    .default("csRanking"),
+    .nullish(),
   orderDir: z.enum(["asc", "desc"]).default("asc"),
 });
 
@@ -108,10 +108,14 @@ export const universityRouter = createTRPCRouter({
       }
 
       // ── orderBy clause ─────────────────────────
+      // If no orderBy specified, use csRanking as default for consistency
+      const defaultOrderBy = "csRanking" as const;
+      const finalOrderBy = orderBy ?? defaultOrderBy;
+      
       const orderByClause: Prisma.UniversityOrderByWithRelationInput =
-        orderBy === "csRanking"
+        finalOrderBy === "csRanking"
           ? { csRanking: orderDir }
-          : orderBy === "name"
+          : finalOrderBy === "name"
           ? { name: orderDir }
           : { createdAt: orderDir };
 

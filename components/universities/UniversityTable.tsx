@@ -2,7 +2,9 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/trpc/client";
+import { Select } from "@/components/ui/Select";
 
 // ── Type helpers ──────────────────────────────────
 
@@ -44,6 +46,23 @@ const MONTHS = [
   { v: "10", l: "October" }, { v: "11", l: "November" },
   { v: "12", l: "December" }, { v: "1", l: "January" },
   { v: "2", l: "February" }, { v: "3", l: "March" },
+];
+
+// Option arrays for custom Select
+const GRE_OPTIONS = [
+  { value: "", label: "GRE - All" },
+  { value: "required", label: "GRE Required" },
+  { value: "waived", label: "GRE Waived" },
+];
+
+const STATE_OPTIONS = [
+  { value: "", label: "All States" },
+  ...US_STATES.map(s => ({ value: s, label: s })),
+];
+
+const MONTH_OPTIONS = [
+  { value: "", label: "Deadline - Any" },
+  ...MONTHS.map(m => ({ value: m.v, label: m.l })),
 ];
 
 // ── Small UI helpers ──────────────────────────────
@@ -111,23 +130,6 @@ function SortIcon({ active, dir }: { field: string; active: boolean; dir: SortDi
   );
 }
 
-function SelectWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="relative">
-      {children}
-      <svg
-        className="pointer-events-none absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
-        viewBox="0 0 20 20" fill="currentColor"
-      >
-        <path
-          fillRule="evenodd"
-          d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06z"
-        />
-      </svg>
-    </div>
-  );
-}
-
 // ── Main component ────────────────────────────────
 
 export function UniversityTable() {
@@ -139,7 +141,7 @@ export function UniversityTable() {
   const [rankMin, setRankMin] = useState("");
   const [rankMax, setRankMax] = useState("");
   const [deadlineMonth, setDeadlineMonth] = useState("");
-  const [sortField, setSortField] = useState<SortField>("csRanking");
+  const [sortField, setSortField] = useState<SortField | null>("csRanking");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   // Debounce search
@@ -187,8 +189,16 @@ export function UniversityTable() {
   // ── Sort toggle ────────────────────────────────
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
-      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      // If already sorted by this field and direction is desc, reset to default (csRanking asc)
+      if (sortDir === "desc") {
+        setSortField("csRanking");
+        setSortDir("asc");
+      } else {
+        // Otherwise toggle direction
+        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+      }
     } else {
+      // New field - set to asc
       setSortField(field);
       setSortDir("asc");
     }
@@ -230,31 +240,20 @@ export function UniversityTable() {
           </div>
 
           {/* GRE filter */}
-          <SelectWrapper>
-            <select
-              className="select-base w-40 pr-8"
-              value={greFilter}
-              onChange={(e) => setGreFilter(e.target.value)}
-            >
-              <option value="">GRE — All</option>
-              <option value="required">GRE Required</option>
-              <option value="waived">GRE Waived</option>
-            </select>
-          </SelectWrapper>
+          <Select
+            className="w-40"
+            value={greFilter}
+            onChange={setGreFilter}
+            options={GRE_OPTIONS}
+          />
 
           {/* State filter */}
-          <SelectWrapper>
-            <select
-              className="select-base w-36 pr-8"
-              value={stateFilter}
-              onChange={(e) => setStateFilter(e.target.value)}
-            >
-              <option value="">All States</option>
-              {US_STATES.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-          </SelectWrapper>
+          <Select
+            className="w-36"
+            value={stateFilter}
+            onChange={setStateFilter}
+            options={STATE_OPTIONS}
+          />
 
           {/* Ranking range */}
           <div className="flex items-center gap-1.5">
@@ -274,18 +273,12 @@ export function UniversityTable() {
           </div>
 
           {/* Deadline month */}
-          <SelectWrapper>
-            <select
-              className="select-base w-44 pr-8"
-              value={deadlineMonth}
-              onChange={(e) => setDeadlineMonth(e.target.value)}
-            >
-              <option value="">Deadline — Any</option>
-              {MONTHS.map((m) => (
-                <option key={m.v} value={m.v}>{m.l}</option>
-              ))}
-            </select>
-          </SelectWrapper>
+          <Select
+            className="w-44"
+            value={deadlineMonth}
+            onChange={setDeadlineMonth}
+            options={MONTH_OPTIONS}
+          />
 
           {/* Clear */}
           {hasActiveFilters && (
@@ -302,7 +295,7 @@ export function UniversityTable() {
         </div>
 
         {/* Result count */}
-        <div className="mt-2.5 flex items-center gap-2 border-t border-slate-50 pt-2.5">
+        {/* <div className="mt-2.5 flex items-center gap-2 border-t border-slate-50 pt-2.5">
           <span className="text-xs text-slate-400">
             {isLoading ? "Loading…" : `${rows.length} program${rows.length !== 1 ? "s" : ""}`}
             {data && rows.length !== data.total && ` of ${data.total} total`}
@@ -310,7 +303,7 @@ export function UniversityTable() {
           {isLoading && (
             <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-brand-200 border-t-brand-700" />
           )}
-        </div>
+        </div> */}
       </div>
 
       {/* ── Table card ── */}
@@ -330,7 +323,7 @@ export function UniversityTable() {
                     { label: "IELTS", field: null, cls: "w-16 text-right hidden md:table-cell" },
                     { label: "Deadline", field: null, cls: "w-24 hidden lg:table-cell" },
                     { label: "Fee", field: null, cls: "w-16 text-right hidden xl:table-cell" },
-                    { label: "Confidence", field: null, cls: "w-28 hidden lg:table-cell" },
+                    // { label: "Confidence", field: null, cls: "w-28 hidden lg:table-cell" },
                     { label: "", field: null, cls: "w-8" },
                   ].map(({ label, field, cls }) => (
                     <th
@@ -338,13 +331,17 @@ export function UniversityTable() {
                       className={`px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-400 ${cls} ${field ? "cursor-pointer select-none hover:text-slate-600" : ""}`}
                       onClick={field ? () => toggleSort(field) : undefined}
                     >
-                      {label}
-                      {field && (
-                        <SortIcon
-                          field={field}
-                          active={sortField === field}
-                          dir={sortDir}
-                        />
+                      {field ? (
+                        <span className="flex items-center">
+                          {label}
+                          <SortIcon
+                            field={field}
+                            active={sortField === field}
+                            dir={sortDir}
+                          />
+                        </span>
+                      ) : (
+                        label
                       )}
                     </th>
                   ))}
@@ -431,12 +428,16 @@ function UniversityRow({
   uni: UniversityRow;
   adm?: AdmissionData;
 }) {
+  const router = useRouter();
   const deadline = adm?.deadline
     ? new Date(adm.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" })
     : "—";
 
   return (
-    <tr className="row-hover group cursor-pointer">
+    <tr 
+      className="row-hover group cursor-pointer"
+      onClick={() => router.push(`/universities/${uni.id}`)}
+    >
       {/* Rank */}
       <td className="px-4 py-3.5 text-center">
         <RankBadge rank={uni.csRanking} />
@@ -444,21 +445,19 @@ function UniversityRow({
 
       {/* Name */}
       <td className="px-4 py-3.5">
-        <Link href={`/universities/${uni.id}`} className="block">
-          <div className="flex items-center gap-2.5">
-            <div>
-              <div className="font-semibold text-slate-900 group-hover:text-brand-700 transition-colors duration-150 line-clamp-1">
-                {uni.name}
-              </div>
-              {adm?.needsReview && (
-                <span className="badge bg-red-50 text-red-600 ring-1 ring-red-200/60 mt-0.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse inline-block" />
-                  Review needed
-                </span>
-              )}
+        <div className="flex items-center gap-2.5">
+          <div>
+            <div className="font-semibold text-slate-900 group-hover:text-brand-700 transition-colors duration-150 line-clamp-1">
+              {uni.name}
             </div>
+            {adm?.needsReview && (
+              <span className="badge bg-red-50 text-red-600 ring-1 ring-red-200/60 mt-0.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-red-400 animate-pulse inline-block" />
+                Review needed
+              </span>
+            )}
           </div>
-        </Link>
+        </div>
       </td>
 
       {/* State */}
@@ -502,24 +501,22 @@ function UniversityRow({
       </td>
 
       {/* Confidence */}
-      <td className="hidden px-4 py-3.5 lg:table-cell">
+      {/* <td className="hidden px-4 py-3.5 lg:table-cell">
         {adm ? (
           <MiniConfBar score={adm.confidenceScore} />
         ) : (
           <span className="text-xs text-slate-300">No data</span>
         )}
-      </td>
+      </td> */}
 
       {/* Link arrow */}
       <td className="px-3 py-3.5">
-        <Link href={`/universities/${uni.id}`}>
-          <svg
-            className="h-4 w-4 text-slate-300 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-brand-600"
-            fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-          </svg>
-        </Link>
+        <svg
+          className="h-4 w-4 text-slate-300 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-brand-600"
+          fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
       </td>
     </tr>
   );

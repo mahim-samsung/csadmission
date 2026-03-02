@@ -42,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Header />
             <main className="flex-1">{children}</main>
             <footer className="border-t border-slate-100 bg-white py-5 text-center text-xs text-slate-400">
-              CS Admission Intelligence © {new Date().getFullYear()} — Data refreshed weekly via AI crawling
+              CS Admission Intelligence © {new Date().getFullYear()} by Mahim
             </footer>
           </div>
         </TRPCReactProvider>
