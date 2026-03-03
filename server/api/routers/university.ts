@@ -29,6 +29,12 @@ export const GetUniversitiesInputSchema = z.object({
   /** Filter to universities where greRequired = true */
   greRequired: z.boolean().nullish(),
 
+  /** Maximum IELTS overall band score (e.g. 6.0, 6.5, 7.0) */
+  ieltsMin: z.number().min(0).max(9).nullish(),
+
+  /** Maximum TOEFL iBT score (e.g. 70, 80, 90, 100) */
+  toeflMax: z.number().int().min(0).max(120).nullish(),
+
   /** Filter by US state abbreviation or full name, case-insensitive */
   state: z.string().trim().max(100).nullish(),
 
@@ -68,6 +74,8 @@ export const universityRouter = createTRPCRouter({
       const {
         search,
         greRequired,
+        ieltsMin,
+        toeflMax,
         state,
         rankingRange,
         includeAdmissions,
@@ -104,6 +112,36 @@ export const universityRouter = createTRPCRouter({
       if (greRequired !== undefined && greRequired !== null) {
         where.admissions = {
           some: { greRequired },
+        };
+      }
+
+      // IELTS maximum score filter: join through admissions relation
+      if (ieltsMin !== undefined && ieltsMin !== null) {
+        where.admissions = {
+          ...(where.admissions ?? {}),
+          some: {
+            ...(typeof where.admissions === "object" &&
+            "some" in where.admissions &&
+            typeof where.admissions.some === "object"
+              ? where.admissions.some
+              : {}),
+            ieltsScore: { lte: ieltsMin },
+          },
+        };
+      }
+
+      // TOEFL maximum score filter: join through admissions relation
+      if (toeflMax !== undefined && toeflMax !== null) {
+        where.admissions = {
+          ...(where.admissions ?? {}),
+          some: {
+            ...(typeof where.admissions === "object" &&
+            "some" in where.admissions &&
+            typeof where.admissions.some === "object"
+              ? where.admissions.some
+              : {}),
+            toeflScore: { lte: toeflMax },
+          },
         };
       }
 

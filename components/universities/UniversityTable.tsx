@@ -36,16 +36,66 @@ type SortDir = "asc" | "desc";
 // ── Constants ─────────────────────────────────────
 
 const US_STATES = [
-  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN",
-  "IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV",
-  "NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN",
-  "TX","UT","VT","VA","WA","WV","WI","WY","DC",
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+  "DC",
 ];
 
 const MONTHS = [
-  { v: "10", l: "October" }, { v: "11", l: "November" },
-  { v: "12", l: "December" }, { v: "1", l: "January" },
-  { v: "2", l: "February" }, { v: "3", l: "March" },
+  { v: "10", l: "October" },
+  { v: "11", l: "November" },
+  { v: "12", l: "December" },
+  { v: "1", l: "January" },
+  { v: "2", l: "February" },
+  { v: "3", l: "March" },
 ];
 
 // Option arrays for custom Select
@@ -55,14 +105,30 @@ const GRE_OPTIONS = [
   { value: "waived", label: "GRE Waived" },
 ];
 
+const IELTS_OPTIONS = [
+  { value: "", label: "IELTS - All" },
+  { value: "6.0", label: "IELTS ≤ 6.0" },
+  { value: "6.5", label: "IELTS ≤ 6.5" },
+  { value: "7.0", label: "IELTS ≤ 7.0" },
+  { value: "7.5", label: "IELTS ≤ 7.5" },
+];
+
+const TOEFL_OPTIONS = [
+  { value: "", label: "TOEFL - All" },
+  { value: "70", label: "TOEFL ≤ 70" },
+  { value: "80", label: "TOEFL ≤ 80" },
+  { value: "90", label: "TOEFL ≤ 90" },
+  { value: "100", label: "TOEFL ≤ 100" },
+];
+
 const STATE_OPTIONS = [
   { value: "", label: "All States" },
-  ...US_STATES.map(s => ({ value: s, label: s })),
+  ...US_STATES.map((s) => ({ value: s, label: s })),
 ];
 
 const MONTH_OPTIONS = [
   { value: "", label: "Deadline - Any" },
-  ...MONTHS.map(m => ({ value: m.v, label: m.l })),
+  ...MONTHS.map((m) => ({ value: m.v, label: m.l })),
 ];
 
 // ── Small UI helpers ──────────────────────────────
@@ -72,12 +138,14 @@ function RankBadge({ rank }: { rank: number }) {
     rank <= 10
       ? "bg-brand-700 text-white shadow-sm shadow-brand-900/20"
       : rank <= 25
-      ? "bg-brand-100 text-brand-700"
-      : rank <= 50
-      ? "bg-slate-100 text-slate-600"
-      : "bg-slate-50 text-slate-500";
+        ? "bg-brand-100 text-brand-700"
+        : rank <= 50
+          ? "bg-slate-100 text-slate-600"
+          : "bg-slate-50 text-slate-500";
   return (
-    <span className={`inline-flex h-6 w-10 items-center justify-center rounded-md text-[11px] font-bold ${cls}`}>
+    <span
+      className={`inline-flex h-6 w-10 items-center justify-center rounded-md text-[11px] font-bold ${cls}`}
+    >
       #{rank}
     </span>
   );
@@ -100,7 +168,11 @@ function GreBadge({ required }: { required: boolean | null }) {
 function MiniConfBar({ score }: { score: number }) {
   const pct = Math.round(score * 100);
   const color =
-    score >= 0.85 ? "bg-emerald-500" : score >= 0.65 ? "bg-amber-500" : "bg-red-400";
+    score >= 0.85
+      ? "bg-emerald-500"
+      : score >= 0.65
+        ? "bg-amber-500"
+        : "bg-red-400";
   return (
     <div className="flex items-center gap-1.5">
       <div className="h-1.5 w-14 overflow-hidden rounded-full bg-slate-100">
@@ -114,9 +186,18 @@ function MiniConfBar({ score }: { score: number }) {
   );
 }
 
-function SortIcon({ active, dir }: { field: string; active: boolean; dir: SortDir }) {
+function SortIcon({
+  active,
+  dir,
+}: {
+  field: string;
+  active: boolean;
+  dir: SortDir;
+}) {
   return (
-    <span className={`ml-1 inline-flex transition-opacity ${active ? "opacity-100 text-brand-600" : "opacity-30"}`}>
+    <span
+      className={`ml-1 inline-flex transition-opacity ${active ? "opacity-100 text-brand-600" : "opacity-30"}`}
+    >
       {active && dir === "desc" ? (
         <svg className="h-3 w-3" viewBox="0 0 12 12" fill="currentColor">
           <path d="M6 8.5L1.5 4h9L6 8.5z" />
@@ -137,9 +218,9 @@ export function UniversityTable() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [greFilter, setGreFilter] = useState<string>("");
+  const [ieltsFilter, setIeltsFilter] = useState<string>("");
+  const [toeflFilter, setToeflFilter] = useState<string>("");
   const [stateFilter, setStateFilter] = useState("");
-  const [rankMin, setRankMin] = useState("");
-  const [rankMax, setRankMax] = useState("");
   const [deadlineMonth, setDeadlineMonth] = useState("");
   const [sortField, setSortField] = useState<SortField | null>("csRanking");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -152,20 +233,22 @@ export function UniversityTable() {
 
   // ── Query ──────────────────────────────────────
   const greRequired =
-    greFilter === "required" ? true : greFilter === "waived" ? false : undefined;
+    greFilter === "required"
+      ? true
+      : greFilter === "waived"
+        ? false
+        : undefined;
+
+  const ieltsMin = ieltsFilter ? parseFloat(ieltsFilter) : undefined;
+  const toeflMax = toeflFilter ? parseInt(toeflFilter, 10) : undefined;
 
   const { data, isLoading, isError } = api.university.getUniversities.useQuery(
     {
       search: debouncedSearch || undefined,
       greRequired,
+      ieltsMin,
+      toeflMax,
       state: stateFilter || undefined,
-      rankingRange:
-        rankMin || rankMax
-          ? {
-              min: rankMin ? parseInt(rankMin) : undefined,
-              max: rankMax ? parseInt(rankMax) : undefined,
-            }
-          : undefined,
       includeAdmissions: true,
       orderBy: sortField,
       orderDir: sortDir,
@@ -209,14 +292,19 @@ export function UniversityTable() {
     setSearch("");
     setDebouncedSearch("");
     setGreFilter("");
+    setIeltsFilter("");
+    setToeflFilter("");
     setStateFilter("");
-    setRankMin("");
-    setRankMax("");
     setDeadlineMonth("");
   };
 
   const hasActiveFilters =
-    debouncedSearch || greFilter || stateFilter || rankMin || rankMax || deadlineMonth;
+    debouncedSearch ||
+    greFilter ||
+    ieltsFilter ||
+    toeflFilter ||
+    stateFilter ||
+    deadlineMonth;
 
   return (
     <div className="animate-in space-y-4">
@@ -227,9 +315,16 @@ export function UniversityTable() {
           <div className="relative min-w-[200px] flex-1">
             <svg
               className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-              fill="none" viewBox="0 0 24 24" strokeWidth={1.8} stroke="currentColor"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.8}
+              stroke="currentColor"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607z" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607z"
+              />
             </svg>
             <input
               className="input-base pl-9"
@@ -239,14 +334,6 @@ export function UniversityTable() {
             />
           </div>
 
-          {/* GRE filter */}
-          <Select
-            className="w-40"
-            value={greFilter}
-            onChange={setGreFilter}
-            options={GRE_OPTIONS}
-          />
-
           {/* State filter */}
           <Select
             className="w-36"
@@ -255,22 +342,29 @@ export function UniversityTable() {
             options={STATE_OPTIONS}
           />
 
-          {/* Ranking range */}
-          <div className="flex items-center gap-1.5">
-            <input
-              className="input-base w-20 text-center"
-              type="number" min={1} placeholder="Rank ≥"
-              value={rankMin}
-              onChange={(e) => setRankMin(e.target.value)}
-            />
-            <span className="text-slate-300">–</span>
-            <input
-              className="input-base w-20 text-center"
-              type="number" min={1} placeholder="Rank ≤"
-              value={rankMax}
-              onChange={(e) => setRankMax(e.target.value)}
-            />
-          </div>
+          {/* GRE filter */}
+          <Select
+            className="w-40"
+            value={greFilter}
+            onChange={setGreFilter}
+            options={GRE_OPTIONS}
+          />
+
+          {/* TOEFL max filter */}
+          <Select
+            className="w-40"
+            value={toeflFilter}
+            onChange={setToeflFilter}
+            options={TOEFL_OPTIONS}
+          />
+
+          {/* IELTS min filter */}
+          <Select
+            className="w-40"
+            value={ieltsFilter}
+            onChange={setIeltsFilter}
+            options={IELTS_OPTIONS}
+          />
 
           {/* Deadline month */}
           <Select
@@ -286,7 +380,11 @@ export function UniversityTable() {
               onClick={clearFilters}
               className="flex items-center gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium text-slate-400 transition-all hover:bg-red-50 hover:text-red-500"
             >
-              <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
+              <svg
+                className="h-3.5 w-3.5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
                 <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22z" />
               </svg>
               Clear
@@ -315,14 +413,42 @@ export function UniversityTable() {
               <thead className="sticky top-0 z-10">
                 <tr className="border-b border-slate-100 bg-white/95 backdrop-blur-sm">
                   {[
-                    { label: "Rank", field: "csRanking" as SortField, cls: "w-16 text-center" },
-                    { label: "University", field: "name" as SortField, cls: "min-w-[220px]" },
-                    { label: "State", field: null, cls: "w-16 hidden sm:table-cell" },
+                    {
+                      label: "Rank",
+                      field: "csRanking" as SortField,
+                      cls: "w-16 text-center",
+                    },
+                    {
+                      label: "University",
+                      field: "name" as SortField,
+                      cls: "min-w-[220px]",
+                    },
+                    {
+                      label: "State",
+                      field: null,
+                      cls: "w-16 hidden sm:table-cell",
+                    },
                     { label: "GRE", field: null, cls: "w-28" },
-                    { label: "TOEFL", field: null, cls: "w-16 text-right hidden md:table-cell" },
-                    { label: "IELTS", field: null, cls: "w-16 text-right hidden md:table-cell" },
-                    { label: "Deadline", field: null, cls: "w-24 hidden lg:table-cell" },
-                    { label: "Fee", field: null, cls: "w-16 text-right hidden xl:table-cell" },
+                    {
+                      label: "TOEFL",
+                      field: null,
+                      cls: "w-16 text-right hidden md:table-cell",
+                    },
+                    {
+                      label: "IELTS",
+                      field: null,
+                      cls: "w-16 text-right hidden md:table-cell",
+                    },
+                    {
+                      label: "Deadline",
+                      field: null,
+                      cls: "w-24 hidden lg:table-cell",
+                    },
+                    {
+                      label: "Fee",
+                      field: null,
+                      cls: "w-16 text-right hidden xl:table-cell",
+                    },
                     // { label: "Confidence", field: null, cls: "w-28 hidden lg:table-cell" },
                     { label: "", field: null, cls: "w-8" },
                   ].map(({ label, field, cls }) => (
@@ -370,8 +496,12 @@ export function UniversityTable() {
                     <td colSpan={10} className="px-4 py-16 text-center">
                       <div className="flex flex-col items-center gap-2">
                         <span className="text-3xl">⚠️</span>
-                        <p className="text-sm font-medium text-slate-700">Failed to load data</p>
-                        <p className="text-xs text-slate-400">Check your database connection</p>
+                        <p className="text-sm font-medium text-slate-700">
+                          Failed to load data
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          Check your database connection
+                        </p>
                       </div>
                     </td>
                   </tr>
@@ -385,9 +515,13 @@ export function UniversityTable() {
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-2xl">
                           🎓
                         </div>
-                        <p className="text-sm font-medium text-slate-700">No universities found</p>
+                        <p className="text-sm font-medium text-slate-700">
+                          No universities found
+                        </p>
                         <p className="text-xs text-slate-400">
-                          {hasActiveFilters ? "Try adjusting your filters" : "Run the crawler to populate data"}
+                          {hasActiveFilters
+                            ? "Try adjusting your filters"
+                            : "Run the crawler to populate data"}
                         </p>
                         {hasActiveFilters && (
                           <button
@@ -406,9 +540,7 @@ export function UniversityTable() {
                 {!isLoading &&
                   rows.map((uni) => {
                     const adm = uni.admissions?.[0];
-                    return (
-                      <UniversityRow key={uni.id} uni={uni} adm={adm} />
-                    );
+                    return <UniversityRow key={uni.id} uni={uni} adm={adm} />;
                   })}
               </tbody>
             </table>
@@ -430,11 +562,14 @@ function UniversityRow({
 }) {
   const router = useRouter();
   const deadline = adm?.deadline
-    ? new Date(adm.deadline).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    ? new Date(adm.deadline).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+      })
     : "—";
 
   return (
-    <tr 
+    <tr
       className="row-hover group cursor-pointer"
       onClick={() => router.push(`/universities/${uni.id}`)}
     >
@@ -462,7 +597,9 @@ function UniversityRow({
 
       {/* State */}
       <td className="hidden px-4 py-3.5 sm:table-cell">
-        <span className="text-xs font-medium text-slate-500">{uni.state ?? "—"}</span>
+        <span className="text-xs font-medium text-slate-500">
+          {uni.state ?? "—"}
+        </span>
       </td>
 
       {/* GRE */}
@@ -486,7 +623,9 @@ function UniversityRow({
 
       {/* Deadline */}
       <td className="hidden px-4 py-3.5 lg:table-cell">
-        <span className={`text-sm font-medium ${adm?.deadline ? "text-slate-800" : "text-slate-300"}`}>
+        <span
+          className={`text-sm font-medium ${adm?.deadline ? "text-slate-800" : "text-slate-300"}`}
+        >
           {deadline}
         </span>
       </td>
@@ -494,9 +633,11 @@ function UniversityRow({
       {/* Fee */}
       <td className="hidden px-4 py-3.5 text-right xl:table-cell">
         <span className="tabular-nums text-slate-700">
-          {adm?.applicationFee
-            ? `$${adm.applicationFee}`
-            : <span className="text-slate-300">—</span>}
+          {adm?.applicationFee ? (
+            `$${adm.applicationFee}`
+          ) : (
+            <span className="text-slate-300">—</span>
+          )}
         </span>
       </td>
 
@@ -513,9 +654,16 @@ function UniversityRow({
       <td className="px-3 py-3.5">
         <svg
           className="h-4 w-4 text-slate-300 transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-brand-600"
-          fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+          stroke="currentColor"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M8.25 4.5l7.5 7.5-7.5 7.5"
+          />
         </svg>
       </td>
     </tr>
